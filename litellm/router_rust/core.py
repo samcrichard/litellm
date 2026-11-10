@@ -1326,6 +1326,10 @@ class _EndpointPort:
         return self._core._cache  # pyright: ignore[reportPrivateUsage]  # see the class docstring
 
     @property
+    def router_usage(self) -> RouterUsage:
+        return self._core._usage  # pyright: ignore[reportPrivateUsage]  # see the class docstring
+
+    @property
     def selectors(self) -> StrategySelectors:
         return self._core._selectors  # pyright: ignore[reportPrivateUsage]  # see the class docstring
 
@@ -1450,7 +1454,7 @@ class RustCore(
         # document router-core last received for them.
         self._index_written: frozenset[str] = frozenset()
         self._index_sent: Mapping[str, object] | None = None
-        self._selectors: Final = StrategySelectors(host, self._cache)
+        self._selectors: Final = StrategySelectors(host, self._cache, self._usage)
         self._selectors.init_default(resolved.routing_strategy, resolved.routing_strategy_args)
         self._selectors.init_groups(_group_selectors(resolved.routing_groups))
         self._port: Final = _EndpointPort(self)
@@ -1497,7 +1501,7 @@ class RustCore(
         self._hosted._core_routing_plugins = list(resolved.routing_plugins)  # pyright: ignore[reportPrivateUsage]  # the core fills its own host registry
         self._rebuild()
         self._join_callback_holders()
-        self._checks: Final = OptionalChecks(self, host, self._cache, self._hosted, ctx, config.arguments)
+        self._checks: Final = OptionalChecks(self, host, self._cache, self._usage, self._hosted, ctx, config.arguments)
         self._hosted.checks = self._checks
         strategies.ensure_affinity = self._checks.ensure_deployment_affinity_callback
         strategies.hand_over_affinity(self._checks.adopt)
@@ -5162,7 +5166,7 @@ class _Driver:
         releases: Final = (
             release_started_attempt(core._selectors.reservations, core._cache, attempt.attempt_id),  # pyright: ignore[reportPrivateUsage]  # the driver serves its own core
             release_io_token_reservation(
-                core._cache,  # pyright: ignore[reportPrivateUsage]  # see above
+                core._usage,  # pyright: ignore[reportPrivateUsage]  # see above
                 call.kwargs,  # pyright: ignore[reportArgumentType]  # the call's kwargs dict
                 parent_otel_span=get_parent_otel_span_from_kwargs(call.kwargs),
             )

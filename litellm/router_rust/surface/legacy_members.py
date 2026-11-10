@@ -425,7 +425,7 @@ class RustLegacyMembers(RustRegistryMembers, RustOptionalChecks):
         except Exception:
             with contextlib.suppress(Exception):
                 await async_io_token_refund_failure(
-                    self._cache, kwargs, parent_otel_span=get_parent_otel_span_from_kwargs(kwargs)
+                    self._usage, kwargs, parent_otel_span=get_parent_otel_span_from_kwargs(kwargs)
                 )
             raise
         await self.increment_deployment_usage_for_response(response=response, request_kwargs=kwargs)
@@ -513,7 +513,9 @@ class RustLegacyMembers(RustRegistryMembers, RustOptionalChecks):
         if model_group is None or deployment_id is None:
             return
         model: Final = None if deployment_name is None else str(deployment_name)
-        counter: Final = UsageCounter(str(deployment_id), model, get_utc_datetime().strftime("%H-%M"), "rpm")
+        counter: Final = UsageCounter(
+            "global_router", str(deployment_id), model, get_utc_datetime().strftime("%H-%M"), "rpm"
+        )
         await self._usage.increment(counter=counter, value=1, ttl=_USAGE_TTL)
 
     # -- the plugin context ------------------------------------------------------------------------
