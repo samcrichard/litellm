@@ -314,5 +314,14 @@
       "supports_function_calling": true,
       "supports_reasoning": true
     }
+  },
+  "ngrok": {
+    "base_url": "https://gateway.ngrok.ai/v1",
+    "api_key_env": "NGROK_AI_GATEWAY_KEY",
+    "api_base_env": "NGROK_AI_GATEWAY_BASE_URL",
+    "supported_endpoints": ["/v1/chat/completions", "/v1/responses", "/v1/messages", "/v1/embeddings"],
+    "provider_info": {
+      "supports_function_calling": true
+    }
   }
 }
